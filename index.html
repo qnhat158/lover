@@ -56,11 +56,11 @@
   </div>
 
   <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database-compat.js"></script>
 
   <script>
-    // Firebase config
+    // --- Firebase config ---
     const firebaseConfig = {
       apiKey: "AIzaSyA6I0gSynPjirqXfFU72KjL2-by43NhN10",
       authDomain: "lover-74dcd.firebaseapp.com",
@@ -72,31 +72,30 @@
       measurementId: "G-DVDQGBM1W1"
     };
 
-    const app = firebase.initializeApp(firebaseConfig);
+    firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const refHits = db.ref('stats/hits');
-    const refOk = db.ref('stats/ok');
-    const refWrong = db.ref('stats/wrong');
+    // Tạo node nếu chưa có, không ghi đè
+    db.ref('stats').get().then(snapshot => {
+      if (!snapshot.exists()) {
+        db.ref('stats').set({ hits: 0, ok: 0, wrong: 0 });
+      }
+    });
 
     const elHits = document.getElementById('stat-hits');
     const elOk = document.getElementById('stat-ok');
     const elWrong = document.getElementById('stat-wrong');
 
-    function renderStats(hits, ok, wrong) {
-      elHits.textContent = `🔗 Click link: ${hits || 0}`;
-      elOk.textContent = `✅ Đúng: ${ok || 0}`;
-      elWrong.textContent = `❌ Sai: ${wrong || 0}`;
-    }
-
-    // Listen realtime updates
-    db.ref('stats').on('value', snap => {
-      const data = snap.val() || {hits:0, ok:0, wrong:0};
-      renderStats(data.hits, data.ok, data.wrong);
+    // Hiển thị thống kê realtime
+    firebase.database().ref('stats').on('value', (snap) => {
+      const data = snap.val() || {};
+      elHits.textContent = `🔗 Click link: ${data.hits || 0}`;
+      elOk.textContent = `✅ Đúng: ${data.ok || 0}`;
+      elWrong.textContent = `❌ Sai: ${data.wrong || 0}`;
     });
 
-    // Increase hit count
-    db.ref('stats/hits').transaction(n => (n||0)+1);
+    // Tăng lượt click mỗi khi ai đó mở link
+    firebase.database().ref('stats/hits').transaction(n => (n || 0) + 1);
 
     const SECRET_NAMES = ['Thư','Thu','thư','thu'];
     const LETTER = `Chào Thư nha. Nếu Thư đọc được dòng code này tức là tui đã đúng. Thư đã đọc nó. Vậy thì hy vọng thư sẽ dành 1 chút thời gian để đọc hết những dòng suy nghĩ của tui nha. Thật ra thì tui cũng không biết nói sao nữa. Nhưng tôi nghĩ mình có tình cảm với Thư hoặc cũng có thể là những suy nghĩ tào lao. Nhưng sau 1 thời gian nhắn tin với Thư thì tui thấy có gì đó khác lạ. Nhất là khi Thư ẩn đi độc thân. và hủy kết bạn insta và locket với tui. Tui sợ từ từ rồi Thư sẽ hủy luôn kết bạn Facebook. Tui biết tui chả là gì với Thư. Một người vừa học giỏi vừa xinh đẹp lại còn là gia sư thì tui làm sao xứng. Một phần nữa chắc Thư thấy tui đăng mấy cái xàm xàm nên hủy ha. Thật ra thì những cái tui đăng đều có ẩn ý tới Thư không à chứ không phải xàm xàm đâu.  Nhưng mà thui không sao. Thư mà đọc tới đây là tui vui rồi. Nếu sau này Thư có cần tui giúp gì hay sao đó cứ kết bạn lại với tui nheeeeee. Tui sẵn lòng giúp cho mà nếu có thèm bánh bông lan thì cũng kêu tui lun, tui mua cho =)).`;
@@ -110,39 +109,47 @@
       letterArea.innerHTML = '';
       const line = document.createElement('div');
       line.className = 'line';
-      Array.from(LETTER).forEach((ch,i)=>{
-        const sp=document.createElement('span');
-        sp.className='ch'; sp.textContent=ch;
-        sp.style.animation=`slideIn 600ms cubic-bezier(.2,.8,.2,1) forwards`;
-        sp.style.animationDelay=(i*0.03)+'s';
+      Array.from(LETTER).forEach((ch, i) => {
+        const sp = document.createElement('span');
+        sp.className = 'ch';
+        sp.textContent = ch;
+        sp.style.animation = `slideIn 600ms cubic-bezier(.2,.8,.2,1) forwards`;
+        sp.style.animationDelay = (i * 0.03) + 's';
         line.appendChild(sp);
       });
       letterArea.appendChild(line);
     }
 
-    btn.addEventListener('click', ()=>{
+    btn.addEventListener('click', () => {
       const val = input.value.trim();
-      if(!val) return;
-      if(SECRET_NAMES.includes(val)){
-        db.ref('stats/ok').transaction(n=>(n||0)+1);
+      if (!val) return;
+
+      if (SECRET_NAMES.includes(val)) {
+        firebase.database().ref('stats/ok').transaction(n => (n || 0) + 1);
         showLetter();
       } else {
-        db.ref('stats/wrong').transaction(n=>(n||0)+1);
+        firebase.database().ref('stats/wrong').transaction(n => (n || 0) + 1);
         input.animate([{transform:'translateX(0)'},{transform:'translateX(-8px)'},{transform:'translateX(8px)'},{transform:'translateX(0)'}],{duration:420});
       }
     });
 
-    input.addEventListener('keydown', e=>{if(e.key==='Enter') btn.click()});
+    input.addEventListener('keydown', e => { if (e.key === 'Enter') btn.click(); });
 
-    // Snow effect
+    // Hiệu ứng tuyết
     const snow = document.getElementById('snow');
-    for(let i=0;i<60;i++){
-      const d=document.createElement('div');d.className='flake';d.textContent='❄';
-      const left=Math.random()*100;const size=8+Math.random()*18;
-      const delay=Math.random()*-20;const dur=8+Math.random()*18;
-      d.style.left=left+'vw';d.style.fontSize=size+'px';d.style.opacity=(0.3+Math.random()*0.9).toString();
-      d.style.animation=`fall ${dur}s linear ${delay}s infinite`;
-      d.style.transform=`translateY(-10vh) rotate(${Math.random()*360}deg)`;
+    for (let i = 0; i < 60; i++) {
+      const d = document.createElement('div');
+      d.className = 'flake';
+      d.textContent = '❄';
+      const left = Math.random() * 100;
+      const size = 8 + Math.random() * 18;
+      const delay = Math.random() * -20;
+      const dur = 8 + Math.random() * 18;
+      d.style.left = left + 'vw';
+      d.style.fontSize = size + 'px';
+      d.style.opacity = (0.3 + Math.random() * 0.9).toString();
+      d.style.animation = `fall ${dur}s linear ${delay}s infinite`;
+      d.style.transform = `translateY(-10vh) rotate(${Math.random() * 360}deg)`;
       snow.appendChild(d);
     }
   </script>
