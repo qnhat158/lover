@@ -1,66 +1,77 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="vi">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Thông điệp bí mật</title>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Lover</title>
   <style>
-    *{box-sizing:border-box;margin:0;padding:0}
-    html,body{height:100%;font-family:Inter,system-ui,-apple-system,'Segoe UI',Roboto,'Helvetica Neue',Arial;background:#0b1020;color:#e6eef8}
-    .center{display:flex;align-items:center;justify-content:center;height:100%}
-    .snow{pointer-events:none;position:fixed;inset:0;z-index:0;overflow:hidden}
-    .flake{position:absolute;top:-10px;font-size:14px;opacity:.9;user-select:none;filter:blur(.2px)}
-    @keyframes fall{to{transform:translateY(110vh) rotate(360deg)}}
-    .card{position:relative;z-index:10;background:linear-gradient(180deg,rgba(255,255,255,0.03),rgba(255,255,255,0.01));backdrop-filter:blur(6px);border:1px solid rgba(255,255,255,0.06);padding:28px;border-radius:14px;max-width:760px;width:92%;box-shadow:0 10px 30px rgba(2,6,23,0.6)}
-    h1{font-size:1.4rem;margin-bottom:10px;color:#ffeedd}
-    p{line-height:1.6;color:#dfe9ff}
-    .stats{display:flex;gap:12px;margin-top:12px}
-    .stat{background:rgba(255,255,255,0.02);padding:8px 12px;border-radius:8px;font-size:0.9rem}
-    .input-row{display:flex;gap:8px;margin-top:14px}
-    input[type=text]{flex:1;padding:10px;border-radius:8px;border:1px solid rgba(255,255,255,0.06);background:transparent;color:inherit}
-    button{padding:10px 14px;border-radius:8px;border:none;background:#4b74ff;color:white;cursor:pointer}
-    .letter-area{margin-top:18px;padding:18px;border-radius:10px;background:linear-gradient(180deg,rgba(0,0,0,0.12),rgba(255,255,255,0.02));min-height:140px;position:relative;overflow:hidden}
-    .letter-area .line{display:block;font-size:1.05rem;white-space:pre-wrap}
-    .letter-area .ch{display:inline-block;transform:translateX(-18px);opacity:0}
-    @keyframes slideIn{to{transform:translateX(0);opacity:1}}
-    .letter-area::after{content:'';position:absolute;inset:0;background:linear-gradient(180deg,rgba(6,14,32,0.06),transparent);pointer-events:none}
-    footer{margin-top:14px;font-size:0.85rem;opacity:0.8}
-    @media (max-width:520px){h1{font-size:1.1rem}}
+    body {
+      background-color: #111;
+      color: white;
+      font-family: 'Segoe UI', sans-serif;
+      text-align: center;
+      margin: 0;
+      padding: 0;
+    }
+
+    .center {
+      margin-top: 120px;
+    }
+
+    input {
+      padding: 10px;
+      border-radius: 8px;
+      border: none;
+      width: 200px;
+      text-align: center;
+      font-size: 16px;
+      outline: none;
+    }
+
+    button {
+      margin-left: 8px;
+      padding: 10px 20px;
+      border-radius: 8px;
+      border: none;
+      background: #ff0066;
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      transition: background 0.2s;
+    }
+
+    button:hover {
+      background: #ff3385;
+    }
+
+    .letter {
+      margin-top: 20px;
+      line-height: 1.6;
+      white-space: pre-line;
+      animation: fadeIn 1.5s ease;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
   </style>
 </head>
 <body>
-  <div class="snow" id="snow"></div>
-
   <div class="center">
-    <div class="card" role="main">
-      <h1>Đây là thông điệp mình muốn nhắn đến...</h1>
-      <p>Vì đây là một thông điệp bí mật mình muốn gửi đến một người. Người mà mình đã từng gặp nhau ở Vũng Tàu vào tháng 8 và mình đã mua 3 bánh bông lan trứng muối ship đến Thủ Đức. Nếu là bạn thì chỉ cần nhập vào là sẽ đọc được lá thư này. Ví dụ mình tên <strong>Nhật</strong> thì hãy ghi là <strong>Nhật</strong>.</p>
-
-      <div class="stats" aria-live="polite">
-        <div class="stat" id="stat-hits">🔗 Click link: 0</div>
-        <div class="stat" id="stat-ok">✅ Đúng: 0</div>
-        <div class="stat" id="stat-wrong">❌ Sai: 0</div>
-      </div>
-
-      <div class="input-row" style="margin-top:12px;">
-        <input id="name-input" type="text" placeholder="Nhập tên của bạn..." aria-label="Tên" />
-        <button id="submit-btn">Mở thư</button>
-      </div>
-
-      <div class="letter-area" id="letter-area" aria-live="polite" hidden></div>
-
-      <footer>
-        <small>Dữ liệu thống kê lưu realtime trong Firebase Realtime Database.</small>
-      </footer>
-    </div>
+    <h2>Đây là thông điệp mình muốn nhắn đến...</h2>
+    <p>Vì đây là một thông điệp bí mật mình muốn gửi đến một người...</p>
+    <input id="nameInput" type="text" placeholder="Nhập tên vào đây" />
+    <button onclick="checkName()">Xác nhận</button>
+    <div id="messageBox"></div>
   </div>
 
-  <!-- Firebase SDK -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-app.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.2/firebase-database.js"></script>
+  <!-- ================== Firebase SDK (CDN version) ================== -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-app.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.3/firebase-database.js"></script>
 
   <script>
-    // Firebase config
+    // ================== Cấu hình Firebase ==================
     const firebaseConfig = {
       apiKey: "AIzaSyA6I0gSynPjirqXfFU72KjL2-by43NhN10",
       authDomain: "lover-74dcd.firebaseapp.com",
@@ -72,78 +83,42 @@
       measurementId: "G-DVDQGBM1W1"
     };
 
+    // ================== Khởi tạo Firebase ==================
     const app = firebase.initializeApp(firebaseConfig);
     const db = firebase.database();
 
-    const refHits = db.ref('stats/hits');
-    const refOk = db.ref('stats/ok');
-    const refWrong = db.ref('stats/wrong');
-
-    const elHits = document.getElementById('stat-hits');
-    const elOk = document.getElementById('stat-ok');
-    const elWrong = document.getElementById('stat-wrong');
-
-    function renderStats(hits, ok, wrong) {
-      elHits.textContent = `🔗 Click link: ${hits || 0}`;
-      elOk.textContent = `✅ Đúng: ${ok || 0}`;
-      elWrong.textContent = `❌ Sai: ${wrong || 0}`;
-    }
-
-    // Listen realtime updates
-    db.ref('stats').on('value', snap => {
-      const data = snap.val() || {hits:0, ok:0, wrong:0};
-      renderStats(data.hits, data.ok, data.wrong);
-    });
-
-    // Increase hit count
-    db.ref('stats/hits').transaction(n => (n||0)+1);
-
-    const SECRET_NAMES = ['Thư','Thu','thư','thu'];
-    const LETTER = `Chào Thư nha. Nếu Thư đọc được dòng code này tức là tui đã đúng. Thư đã đọc nó. Vậy thì hy vọng thư sẽ dành 1 chút thời gian để đọc hết những dòng suy nghĩ của tui nha. Thật ra thì tui cũng không biết nói sao nữa. Nhưng tôi nghĩ mình có tình cảm với Thư hoặc cũng có thể là những suy nghĩ tào lao. Nhưng sau 1 thời gian nhắn tin với Thư thì tui thấy có gì đó khác lạ. Nhất là khi Thư ẩn đi độc thân. và hủy kết bạn insta và locket với tui. Tui sợ từ từ rồi Thư sẽ hủy luôn kết bạn Facebook. Tui biết tui chả là gì với Thư. Một người vừa học giỏi vừa xinh đẹp lại còn là gia sư thì tui làm sao xứng. Một phần nữa chắc Thư thấy tui đăng mấy cái xàm xàm nên hủy ha. Thật ra thì những cái tui đăng đều có ẩn ý tới Thư không à chứ không phải xàm xàm đâu.  Nhưng mà thui không sao. Thư mà đọc tới đây là tui vui rồi. Nếu sau này Thư có cần tui giúp gì hay sao đó cứ kết bạn lại với tui nheeeeee. Tui sẵn lòng giúp cho mà nếu có thèm bánh bông lan thì cũng kêu tui lun, tui mua cho =)).`;
-
-    const input = document.getElementById('name-input');
-    const btn = document.getElementById('submit-btn');
-    const letterArea = document.getElementById('letter-area');
-
-    function showLetter() {
-      letterArea.hidden = false;
-      letterArea.innerHTML = '';
-      const line = document.createElement('div');
-      line.className = 'line';
-      Array.from(LETTER).forEach((ch,i)=>{
-        const sp=document.createElement('span');
-        sp.className='ch'; sp.textContent=ch;
-        sp.style.animation=`slideIn 600ms cubic-bezier(.2,.8,.2,1) forwards`;
-        sp.style.animationDelay=(i*0.03)+'s';
-        line.appendChild(sp);
+    // ================== Cập nhật thống kê ==================
+    function updateStat(type) {
+      const ref = db.ref("stats");
+      ref.once("value").then(snapshot => {
+        const data = snapshot.val() || { hits: 0, correct: 0, wrong: 0 };
+        if (type === "hit") data.hits++;
+        if (type === "correct") data.correct++;
+        if (type === "wrong") data.wrong++;
+        ref.set(data);
       });
-      letterArea.appendChild(line);
     }
 
-    btn.addEventListener('click', ()=>{
-      const val = input.value.trim();
-      if(!val) return;
-      if(SECRET_NAMES.includes(val)){
-        db.ref('stats/ok').transaction(n=>(n||0)+1);
-        showLetter();
+    // Khi trang load
+    window.addEventListener("load", () => updateStat("hit"));
+
+    // ================== Hàm kiểm tra tên ==================
+    function checkName() {
+      const inputName = document.getElementById("nameInput").value.trim().toLowerCase();
+      const messageBox = document.getElementById("messageBox");
+
+      if (inputName === "nhat") {
+        updateStat("correct");
+        messageBox.innerHTML = `
+          <div class="letter">
+            <p>Chào Thư nha. Nếu Thư đọc được dòng code này tức là tui đã đúng...</p>
+            <p>...Nếu sau này Thư có cần tui giúp gì hay sao đó cứ kết bạn lại với tui nheeeeee...</p>
+          </div>
+        `;
       } else {
-        db.ref('stats/wrong').transaction(n=>(n||0)+1);
-        input.animate([{transform:'translateX(0)'},{transform:'translateX(-8px)'},{transform:'translateX(8px)'},{transform:'translateX(0)'}],{duration:420});
+        updateStat("wrong");
+        messageBox.innerHTML = "<p style='color:red;'>Sai rồi nè 😅</p>";
       }
-    });
-
-    input.addEventListener('keydown', e=>{if(e.key==='Enter') btn.click()});
-
-    // Snow effect
-    const snow = document.getElementById('snow');
-    for(let i=0;i<60;i++){
-      const d=document.createElement('div');d.className='flake';d.textContent='❄';
-      const left=Math.random()*100;const size=8+Math.random()*18;
-      const delay=Math.random()*-20;const dur=8+Math.random()*18;
-      d.style.left=left+'vw';d.style.fontSize=size+'px';d.style.opacity=(0.3+Math.random()*0.9).toString();
-      d.style.animation=`fall ${dur}s linear ${delay}s infinite`;
-      d.style.transform=`translateY(-10vh) rotate(${Math.random()*360}deg)`;
-      snow.appendChild(d);
     }
   </script>
 </body>
